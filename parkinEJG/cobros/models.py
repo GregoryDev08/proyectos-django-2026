@@ -25,6 +25,7 @@ class Cliente(models.Model):
 class Vehiculo(models.Model):
     numero_placa = models.CharField(max_length=10, unique=True, verbose_name="Número de Placa")
     color = models.CharField(max_length=50, verbose_name="Color")
+    marca = models.CharField(max_length=100, verbose_name="Marca")
     modelo = models.CharField(max_length=100, verbose_name="Modelo")
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, verbose_name="Cliente")
 
@@ -39,8 +40,8 @@ class Vehiculo(models.Model):
 
 class Espacio(models.Model):
     TIPO_CHOICES = [
-        ('normal', 'Normal'),
-        ('vip', 'VIP'),
+        ('vehiculo', 'Vehiculo'),
+        ('moto', 'Moto'),
         ('discapacitado', 'Discapacitado'),
     ]
 
