@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 
 # Create your models here.
@@ -34,3 +35,66 @@ class Vehiculo(models.Model):
         verbose_name = "Vehículo"
         verbose_name_plural = "Vehículos"
         ordering = ['numero_placa']
+
+
+class Espacio(models.Model):
+    TIPO_CHOICES = [
+        ('normal', 'Normal'),
+        ('vip', 'VIP'),
+        ('discapacitado', 'Discapacitado'),
+    ]
+
+    numero_espacio = models.CharField(max_length=10, unique=True, verbose_name="Número de Espacio")
+    vehiculo = models.OneToOneField(Vehiculo, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Vehículo Asignado")
+    tipo_espacio = models.CharField(max_length=20, choices=TIPO_CHOICES, default='normal', verbose_name="Tipo de Espacio")
+
+    def __str__(self):
+        return f"Espacio {self.numero_espacio}"
+
+    class Meta:
+        verbose_name = "Espacio"
+        verbose_name_plural = "Espacios"
+        ordering = ['numero_espacio']
+
+
+class Cobro(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, verbose_name="Cliente")
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE, verbose_name="Vehículo")
+    espacio = models.ForeignKey(Espacio, on_delete=models.CASCADE, verbose_name="Espacio")
+    fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha")
+    tiempo_horas = models.DecimalField(max_digits=6, decimal_places=2, verbose_name="Tiempo en Horas")
+    costo_por_hora = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal('0.75'), verbose_name="Costo por Hora")
+    precio_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Precio Total")
+
+    cliente_nombre = models.CharField(max_length=100, verbose_name="Nombre Cliente")
+    cliente_apellido = models.CharField(max_length=100, verbose_name="Apellido Cliente")
+    cliente_email = models.EmailField(verbose_name="Email Cliente")
+    cliente_telefono = models.CharField(max_length=15, blank=True, null=True, verbose_name="Teléfono Cliente")
+    cliente_dni = models.CharField(max_length=20, verbose_name="DNI Cliente")
+
+    vehiculo_numero_placa = models.CharField(max_length=10, verbose_name="Placa Vehículo")
+    vehiculo_color = models.CharField(max_length=50, verbose_name="Color Vehículo")
+    vehiculo_modelo = models.CharField(max_length=100, verbose_name="Modelo Vehículo")
+
+    def save(self, *args, **kwargs):
+        if not self.cliente_nombre:
+            self.cliente_nombre = self.cliente.nombre
+            self.cliente_apellido = self.cliente.apellido
+            self.cliente_email = self.cliente.email
+            self.cliente_telefono = self.cliente.telefono
+            self.cliente_dni = self.cliente.dni
+        if not self.vehiculo_numero_placa:
+            self.vehiculo_numero_placa = self.vehiculo.numero_placa
+            self.vehiculo_color = self.vehiculo.color
+            self.vehiculo_modelo = self.vehiculo.modelo
+        if self.tiempo_horas is not None and self.costo_por_hora is not None:
+            self.precio_total = self.tiempo_horas * self.costo_por_hora
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Cobro #{self.pk} - {self.vehiculo_numero_placa}"
+
+    class Meta:
+        verbose_name = "Cobro"
+        verbose_name_plural = "Cobros"
+        ordering = ['-fecha']
