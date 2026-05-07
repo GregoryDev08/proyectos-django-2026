@@ -67,27 +67,27 @@ class Cobro(models.Model):
     costo_por_hora = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal('0.75'), verbose_name="Costo por Hora")
     precio_total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), editable=False, verbose_name="Precio Total")
 
-    cliente_nombre = models.CharField(max_length=100, verbose_name="Nombre Cliente")
-    cliente_apellido = models.CharField(max_length=100, verbose_name="Apellido Cliente")
-    cliente_email = models.EmailField(verbose_name="Email Cliente")
+    cliente_nombre = models.CharField(max_length=100, blank=True, null=True, verbose_name="Nombre Cliente")
+    cliente_apellido = models.CharField(max_length=100, blank=True, null=True, verbose_name="Apellido Cliente")
+    cliente_email = models.EmailField(blank=True, null=True, verbose_name="Email Cliente")
     cliente_telefono = models.CharField(max_length=15, blank=True, null=True, verbose_name="Teléfono Cliente")
-    cliente_dni = models.CharField(max_length=20, verbose_name="DNI Cliente")
+    cliente_dni = models.CharField(max_length=20, blank=True, null=True, verbose_name="DNI Cliente")
 
-    vehiculo_numero_placa = models.CharField(max_length=10, verbose_name="Placa Vehículo")
-    vehiculo_color = models.CharField(max_length=50, verbose_name="Color Vehículo")
-    vehiculo_modelo = models.CharField(max_length=100, verbose_name="Modelo Vehículo")
+    vehiculo_numero_placa = models.CharField(max_length=10, blank=True, null=True, verbose_name="Placa Vehículo")
+    vehiculo_color = models.CharField(max_length=50, blank=True, null=True, verbose_name="Color Vehículo")
+    vehiculo_modelo = models.CharField(max_length=100, blank=True, null=True, verbose_name="Modelo Vehículo")
 
     def save(self, *args, **kwargs):
-        if not self.cliente_nombre:
-            self.cliente_nombre = self.cliente.nombre
-            self.cliente_apellido = self.cliente.apellido
-            self.cliente_email = self.cliente.email
-            self.cliente_telefono = self.cliente.telefono
-            self.cliente_dni = self.cliente.dni
-        if not self.vehiculo_numero_placa:
-            self.vehiculo_numero_placa = self.vehiculo.numero_placa
-            self.vehiculo_color = self.vehiculo.color
-            self.vehiculo_modelo = self.vehiculo.modelo
+        self.cliente_nombre = self.cliente.nombre
+        self.cliente_apellido = self.cliente.apellido
+        self.cliente_email = self.cliente.email
+        self.cliente_telefono = self.cliente.telefono
+        self.cliente_dni = self.cliente.dni
+
+        self.vehiculo_numero_placa = self.vehiculo.numero_placa
+        self.vehiculo_color = self.vehiculo.color
+        self.vehiculo_modelo = self.vehiculo.modelo
+
         if self.tiempo_horas is not None and self.costo_por_hora is not None:
             self.precio_total = self.tiempo_horas * self.costo_por_hora
         else:
