@@ -65,7 +65,7 @@ class Cobro(models.Model):
     fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha")
     tiempo_horas = models.DecimalField(max_digits=6, decimal_places=2, verbose_name="Tiempo en Horas")
     costo_por_hora = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal('0.75'), verbose_name="Costo por Hora")
-    precio_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Precio Total")
+    precio_total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), editable=False, verbose_name="Precio Total")
 
     cliente_nombre = models.CharField(max_length=100, verbose_name="Nombre Cliente")
     cliente_apellido = models.CharField(max_length=100, verbose_name="Apellido Cliente")
@@ -90,6 +90,8 @@ class Cobro(models.Model):
             self.vehiculo_modelo = self.vehiculo.modelo
         if self.tiempo_horas is not None and self.costo_por_hora is not None:
             self.precio_total = self.tiempo_horas * self.costo_por_hora
+        else:
+            self.precio_total = Decimal('0.00')
         super().save(*args, **kwargs)
 
     def __str__(self):
