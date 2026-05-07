@@ -63,7 +63,7 @@ class Cobro(models.Model):
     vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE, verbose_name="Vehículo")
     espacio = models.ForeignKey(Espacio, on_delete=models.CASCADE, verbose_name="Espacio")
     # fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha")
-    hora_ingreso = models.DateTimeField(auto_now_add=True, verbose_name="Hora de Ingreso")
+    hora_ingreso = models.DateTimeField(null=True, verbose_name="Hora de Ingreso")
     hora_salida = models.DateTimeField(null=True, blank=True, verbose_name="Hora de Salida")
 
     tiempo_horas = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal('0.00'), editable=False, verbose_name="Tiempo en Horas")
@@ -92,20 +92,26 @@ class Cobro(models.Model):
         self.vehiculo_modelo = self.vehiculo.modelo
 
         if self.hora_salida and self.hora_ingreso:
-            # Restamos las fechas (el resultado es un objeto 'timedelta')
             diferencia = self.hora_salida - self.hora_ingreso
             
-            # Convertimos la diferencia a horas exactas usando los segundos totales
             horas_exactas = Decimal(diferencia.total_seconds()) / Decimal('3600')
             
-            # Redondeamos a dos decimales y calculamos el total
             self.tiempo_horas = round(horas_exactas, 2)
-            self.precio_total = self.tiempo_horas * self.costo_por_hora
+            precio_calculado = self.tiempo_horas * self.costo_por_hora
+
+            if precio_calculado < self.costo_por_hora:
+                self.precio_total = self.costo_por_hora
+            else:
+                self.precio_total = precio_calculado
+                
         else:
-            # Si el auto sigue adentro (no hay hora de salida), el tiempo y precio son 0
             self.tiempo_horas = Decimal('0.00')
             self.precio_total = Decimal('0.00')
-            
+        
+        if self.hora_salida:
+            if self.espacio.vehiculo == self.vehiculo:
+                self.espacio.vehiculo = None
+                self.espacio.save()
         super().save(*args, **kwargs)
 
     def __str__(self):
