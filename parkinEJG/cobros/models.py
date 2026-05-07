@@ -62,8 +62,11 @@ class Cobro(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, verbose_name="Cliente")
     vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE, verbose_name="Vehículo")
     espacio = models.ForeignKey(Espacio, on_delete=models.CASCADE, verbose_name="Espacio")
-    fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha")
-    tiempo_horas = models.DecimalField(max_digits=6, decimal_places=2, verbose_name="Tiempo en Horas")
+    # fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha")
+    hora_ingreso = models.DateTimeField(auto_now_add=True, verbose_name="Hora de Ingreso")
+    hora_salida = models.DateTimeField(null=True, blank=True, verbose_name="Hora de Salida")
+
+    tiempo_horas = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal('0.00'), editable=False, verbose_name="Tiempo en Horas")
     costo_por_hora = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal('0.75'), verbose_name="Costo por Hora")
     precio_total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), editable=False, verbose_name="Precio Total")
 
@@ -88,10 +91,21 @@ class Cobro(models.Model):
         self.vehiculo_color = self.vehiculo.color
         self.vehiculo_modelo = self.vehiculo.modelo
 
-        if self.tiempo_horas is not None and self.costo_por_hora is not None:
+        if self.hora_salida and self.hora_ingreso:
+            # Restamos las fechas (el resultado es un objeto 'timedelta')
+            diferencia = self.hora_salida - self.hora_ingreso
+            
+            # Convertimos la diferencia a horas exactas usando los segundos totales
+            horas_exactas = Decimal(diferencia.total_seconds()) / Decimal('3600')
+            
+            # Redondeamos a dos decimales y calculamos el total
+            self.tiempo_horas = round(horas_exactas, 2)
             self.precio_total = self.tiempo_horas * self.costo_por_hora
         else:
+            # Si el auto sigue adentro (no hay hora de salida), el tiempo y precio son 0
+            self.tiempo_horas = Decimal('0.00')
             self.precio_total = Decimal('0.00')
+            
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -100,4 +114,4 @@ class Cobro(models.Model):
     class Meta:
         verbose_name = "Cobro"
         verbose_name_plural = "Cobros"
-        ordering = ['-fecha']
+        ordering = ['-hora_ingreso']

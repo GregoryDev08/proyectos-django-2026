@@ -14,8 +14,8 @@ class CobroAdmin(admin.ModelAdmin):
         'vehiculo_modelo',
         'precio_total',
     ]
-    list_display = ['id', 'cliente', 'vehiculo', 'espacio', 'fecha', 'tiempo_horas', 'precio_total']
-    list_filter = ['fecha', 'espacio']
+    list_display = ['id', 'cliente', 'vehiculo', 'espacio', 'hora_ingreso', 'tiempo_horas', 'precio_total']
+    list_filter = ['hora_ingreso', 'espacio']
     search_fields = ['cliente_nombre', 'vehiculo_numero_placa', 'cliente_dni']
 
 
