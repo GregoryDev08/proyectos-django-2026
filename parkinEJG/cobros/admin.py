@@ -6,6 +6,8 @@ from django.urls import path
 from django.shortcuts import redirect
 from django.utils import timezone
 
+
+## Acciones para mostrar datos principales en el Modelo de Cobro
 @admin.register(Cobro)
 class CobroAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'hora_ingreso', 'hora_salida', 'precio_total', 'botones_accion')
